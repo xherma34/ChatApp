@@ -1,0 +1,31 @@
+# Binaries and build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.vs
+.vscode/
+.idea/
+
+# Logs & cache
+logs/
+*.log
+
+# Environment settings (Sensitive Data)
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Staging.json
+secrets.json
+
+# EF Core migrations (optional)
+Migrations/
+
+# Dependencies
+node_modules/
+wwwroot/
+
+# IDE & OS files
+.DS_Store
+Thumbs.db

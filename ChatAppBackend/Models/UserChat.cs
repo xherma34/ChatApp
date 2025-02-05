@@ -7,10 +7,10 @@ public class UserChat
 	// Foreign key to user
 	public int UserId { get; set; }
 	// Reference to user
-	public required User User { get; set; }
+	public User User { get; set; } = null!;
 
 	// Foreign key to chat
 	public int ChatId { get; set; }
 	// Reference to chat
-	public required Chat Chat { get; set; }
+	public Chat Chat { get; set; } = null!;
 }

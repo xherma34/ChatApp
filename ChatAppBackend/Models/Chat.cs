@@ -5,7 +5,7 @@ namespace ChatAppBackend.Models;
 public class Chat
 {
 	public int Id { get; set; }
-	public required string Name { get; set; }
+	public string Name { get; set; } = string.Empty;
 
 	// Relationships
 	// Chat 1-N UserChat
