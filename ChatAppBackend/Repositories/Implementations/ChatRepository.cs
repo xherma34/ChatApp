@@ -28,14 +28,6 @@ public class ChatRepository : IChatRepository
 		return await _dbContext.Chats.ToListAsync();
 	}
 
-	public async Task<IEnumerable<User>> GetUsersByChatId(int chatId)
-	{
-		return await _dbContext.UserChats
-			.Where(uc => uc.ChatId == chatId)
-			.Select(uc => uc.User)
-			.ToListAsync();
-	}
-
 	// ----------------------- ADD METHODS -----------------------
 	public async Task AddAsync(Chat chat)
 	{

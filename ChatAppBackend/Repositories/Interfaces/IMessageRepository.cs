@@ -25,6 +25,18 @@ public interface IMessageRepository
 	/// <param name="userId">Id of sender (user)</param>
 	Task<IEnumerable<Message>> GetAllByChatIdUserIdAsync(int chatId, int userId);
 
+	/// <summary>
+	/// Returns a list of all messages created by user with userId
+	/// </summary>
+	/// <param name="userId">Id of user</param>
+	Task<IEnumerable<Message>> GetAllByUserIdAsync(int userId);
+
+	/// <summary>
+	/// Returns the sender of message with id msgId 
+	/// </summary>
+	/// <param name="msgId">Id of message</param>
+	Task<User> GetUserByMsgIdAsync(int msgId);
+
 	// ----------------------- ADD METHODS -----------------------
 	/// <summary>
 	/// Add method

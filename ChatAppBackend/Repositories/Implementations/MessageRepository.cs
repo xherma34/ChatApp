@@ -63,4 +63,22 @@ public class MessageRepository : IMessageRepository
 		}
 	}
 
+	public async Task<IEnumerable<Message>> GetAllByUserIdAsync(int userId)
+	{
+		return await _dbContext.Messages
+			.Where(m => m.UserId == userId)
+			.ToListAsync();
+	}
+
+	public async Task<User> GetUserByMsgIdAsync(int msgId)
+	{
+		var msg = await _dbContext.Messages
+			.Include(m => m.User)
+			.FirstOrDefaultAsync(m => m.Id == msgId);
+
+		if (msg == null)
+			throw new KeyNotFoundException($"Message with {msgId} not found");
+
+		return msg.User;
+	}
 }

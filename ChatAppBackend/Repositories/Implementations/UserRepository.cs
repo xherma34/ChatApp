@@ -31,26 +31,11 @@ public class UserRepository : IUserRepository
 		return await _dbContext.Users.ToListAsync();
 	}
 
-	public async Task<IEnumerable<Chat>> GetChatsByUserIdAsync(int userId)
-	{
-		return await _dbContext.UserChats
-			.Where(uc => uc.UserId == userId)
-			.Select(uc => uc.Chat)
-			.ToListAsync();
-	}
-
 	// ----------------------- ADD METHODS -----------------------
 	public async Task AddAsync(User user)
 	{
 		await _dbContext.Users.AddAsync(user);
 		await _dbContext.SaveChangesAsync();
-	}
-
-	public async Task AddUserToChatAsync(UserChat userChat)
-	{
-		await _dbContext.UserChats.AddAsync(userChat);
-		await _dbContext.SaveChangesAsync();
-
 	}
 
 	// ----------------------- UPDATE METHODS -----------------------
@@ -70,17 +55,6 @@ public class UserRepository : IUserRepository
 			_dbContext.Users.Remove(user);
 			await _dbContext.SaveChangesAsync();
 		}
-	}
-
-	public async Task RemoveUserFromChatAsync(int userId, int chatId)
-	{
-		var userChat = await _dbContext.UserChats
-			.FirstOrDefaultAsync(uc => uc.ChatId == chatId && uc.UserId == userId);
-
-		if (userChat == null) throw new KeyNotFoundException($"User with ID {userId} is not a part of chat with ID {chatId}.");
-
-		_dbContext.UserChats.Remove(userChat);
-		await _dbContext.SaveChangesAsync();
 	}
 
 }

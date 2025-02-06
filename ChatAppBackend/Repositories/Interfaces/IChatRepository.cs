@@ -21,11 +21,6 @@ public interface IChatRepository
 	/// <returns></returns>
 	Task<IEnumerable<Chat>> GetAllAsync();
 
-	/// <summary>
-	/// Returns all users participating in a chat with ID chatId
-	/// </summary>
-	/// <param name="chatId">Id of chat</param>
-	Task<IEnumerable<User>> GetUsersByChatId(int chatId);
 
 	// ----------------------- ADD METHODS -----------------------
 	/// <summary>

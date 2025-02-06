@@ -13,6 +13,7 @@ public class User
 	public string MailAddress { get; set; } = string.Empty;
 	public DateTime JoinDate { get; set; }
 	public bool IsBanned { get; set; } = false;
+	// TODO: Add role!
 
 	// Relationships
 	// User 1 - N messages

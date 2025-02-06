@@ -5,8 +5,6 @@ namespace ChatAppBackend.Repositories.Interfaces;
 
 public interface IUserRepository
 {
-
-
 	// ----------------------- GET METHODS -----------------------
 	/// <summary>
 	/// Tries to get user by passed ID
@@ -22,11 +20,6 @@ public interface IUserRepository
 	/// <returns></returns>
 	Task<IEnumerable<User>> GetAllAsync();
 
-	/// <summary>
-	/// Returns all chats that user is a part of
-	/// </summary>
-	/// <param name="userId">ID of user</param>
-	Task<IEnumerable<Chat>> GetChatsByUserIdAsync(int userId);
 
 	// ----------------------- ADD METHODS -----------------------
 	/// <summary>
@@ -35,10 +28,6 @@ public interface IUserRepository
 	/// <param name="user">User info</param>
 	Task AddAsync(User user);
 
-	/// <summary>
-	/// Creates the record for UserChat joint table
-	/// </summary>
-	Task AddUserToChatAsync(UserChat userChat);
 
 	// ----------------------- UPDATE METHODS -----------------------
 	/// <summary>
@@ -54,11 +43,5 @@ public interface IUserRepository
 	/// <param name="id">ID of a user to delete</param>
 	Task RemoveAsync(int id);
 
-	/// <summary>
-	/// Removes the record from UserChat joint table
-	/// </summary>
-	/// <param name="userId">User to be removed</param>
-	/// <param name="chatId">Chat id</param>
-	/// <returns></returns>
-	Task RemoveUserFromChatAsync(int userId, int chatId);
+
 }
