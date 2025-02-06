@@ -29,3 +29,9 @@ wwwroot/
 # IDE & OS files
 .DS_Store
 Thumbs.db
+
+# Databases
+chatapp.db
+
+# Mockups and sketches
+ArchitectureMockup/
