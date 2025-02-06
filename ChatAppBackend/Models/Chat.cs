@@ -9,7 +9,7 @@ public class Chat
 
 	// Relationships
 	// Chat 1-N UserChat
-	public ICollection<UserChat> UsersChats { get; set; } = new List<UserChat>();
+	public ICollection<UserChat> UserChats { get; set; } = new List<UserChat>();
 
 	// Chat 1 - N message
 	public ICollection<Message> Messages { get; set; } = new List<Message>();

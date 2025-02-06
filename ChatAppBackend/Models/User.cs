@@ -13,7 +13,6 @@ public class User
 	public string MailAddress { get; set; } = string.Empty;
 	public DateTime JoinDate { get; set; }
 	public bool IsBanned { get; set; } = false;
-	public UserStatus UserStatus { get; set; }
 
 	// Relationships
 	// User 1 - N messages
@@ -23,5 +22,5 @@ public class User
 	public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
 	// User 1 - N UserChat
-	public ICollection<UserChat> UsersChats { get; set; } = new List<UserChat>();
+	public ICollection<UserChat> UserChats { get; set; } = new List<UserChat>();
 }

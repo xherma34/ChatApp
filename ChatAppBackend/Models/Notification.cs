@@ -9,6 +9,7 @@ public class Notification
 	public int Id { get; set; }
 	public string Content { get; set; } = string.Empty;
 	public NotificationType Type { get; set; }
+	public NotificationStatus Status { get; set; }
 
 	// Relationships
 

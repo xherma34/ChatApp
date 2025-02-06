@@ -1,4 +1,5 @@
 using System;
+using ChatAppBackend.Enums;
 
 namespace ChatAppBackend.Models;
 
@@ -13,4 +14,6 @@ public class UserChat
 	public int ChatId { get; set; }
 	// Reference to chat
 	public Chat Chat { get; set; } = null!;
+
+	public UserStatus UserStatus { get; set; }
 }
