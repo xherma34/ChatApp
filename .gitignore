@@ -17,6 +17,7 @@ logs/
 appsettings.Development.json
 appsettings.Local.json
 appsettings.Staging.json
+appsettings.json
 secrets.json
 
 # EF Core migrations (optional)
