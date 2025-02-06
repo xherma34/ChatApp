@@ -29,17 +29,42 @@ public class ApplicationDbContext : DbContext
 			.HasKey(uc => new { uc.UserId, uc.ChatId });
 
 		// Define relationships:
-		// User 1 -> N userchat
+
+		// User 1 -> N messages
+		modelBuilder.Entity<Message>()
+			.HasOne(m => m.User)
+			.WithMany(u => u.Messages)
+			.HasForeignKey(m => m.UserId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		// User 1 -> N UserChat
 		modelBuilder.Entity<UserChat>()
 			.HasOne(uc => uc.User)
 			.WithMany(u => u.UserChats)
-			.HasForeignKey(uc => uc.UserId);
+			.HasForeignKey(uc => uc.UserId)
+			.OnDelete(DeleteBehavior.Cascade);
 
-		// Chat 1 -> N userchat
+		// User 1 -> N notifications
+		modelBuilder.Entity<Notification>()
+			.HasOne(n => n.User)
+			.WithMany(u => u.Notifications)
+			.HasForeignKey(n => n.UserId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		// Chat 1 -> N user chat
 		modelBuilder.Entity<UserChat>()
 			.HasOne(uc => uc.Chat)
 			.WithMany(c => c.UserChats)
-			.HasForeignKey(uc => uc.ChatId);
+			.HasForeignKey(uc => uc.ChatId)
+			.OnDelete(DeleteBehavior.Cascade);
+
+		// Chat 1 -> N msgs
+		modelBuilder.Entity<Message>()
+			.HasOne(m => m.Chat)
+			.WithMany(c => c.Messages)
+			.HasForeignKey(m => m.ChatId)
+			.OnDelete(DeleteBehavior.Cascade);
+
 	}
 
 }
