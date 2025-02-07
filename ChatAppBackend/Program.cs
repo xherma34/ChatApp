@@ -1,4 +1,6 @@
 using ChatAppBackend.Data;
+using ChatAppBackend.Repositories.Implementations;
+using ChatAppBackend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,13 @@ builder.Services.AddSwaggerGen();
 //      -> Registers ApplicationDbContext in ASP.NET Core's DI container
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register repositories so that they can be injected to services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
 
 
 var app = builder.Build();

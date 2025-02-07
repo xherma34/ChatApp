@@ -21,14 +21,22 @@ public class UserRepository : IUserRepository
 	// ----------------------- GET METHODS -----------------------
 	public async Task<User> GetByIdAsync(int id)
 	{
-		var user = await _dbContext.Users.FindAsync(id);
-		if (user == null) throw new KeyNotFoundException($"User with ID {id} not found.");
-		return user;
+#pragma warning disable CS8603 // Possible null reference return.
+		return await _dbContext.Users.FindAsync(id);
+#pragma warning restore CS8603 // Possible null reference return.
+
 	}
 
 	public async Task<IEnumerable<User>> GetAllAsync()
 	{
 		return await _dbContext.Users.ToListAsync();
+	}
+
+	public async Task<User> GetByMailAddressAsync(string mail)
+	{
+#pragma warning disable CS8603 // Possible null reference return.
+		return await _dbContext.Users.FirstOrDefaultAsync(u => u.MailAddress == mail);
+#pragma warning restore CS8603 // Possible null reference return.
 	}
 
 	// ----------------------- ADD METHODS -----------------------
@@ -56,5 +64,6 @@ public class UserRepository : IUserRepository
 			await _dbContext.SaveChangesAsync();
 		}
 	}
+
 
 }

@@ -15,6 +15,12 @@ public interface IUserRepository
 	Task<User> GetByIdAsync(int id);
 
 	/// <summary>
+	/// Tries to return user with email address from the DB
+	/// </summary>
+	/// <param name="mail"></param>
+	Task<User> GetByMailAddressAsync(string mail);
+
+	/// <summary>
 	/// Method gets all users from DB
 	/// </summary>
 	/// <returns></returns>
