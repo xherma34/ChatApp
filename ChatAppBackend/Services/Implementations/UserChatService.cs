@@ -28,6 +28,7 @@ public class UserChatService : BaseService, IUserChatService
 
 	public async Task AddUserToChat(int userId, int chatId)
 	{
+		// TODO: Add functionality that users can be banned from channels -> here you check if they are banned
 		// IsSameId
 		if (!IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of add user to chat");
@@ -158,6 +159,5 @@ public class UserChatService : BaseService, IUserChatService
 				UserStatus = ucDto.UserStatus
 			});
 
-		// Update method
 	}
 }
