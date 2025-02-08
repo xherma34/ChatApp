@@ -21,6 +21,11 @@ public interface IUserChatRepository
 	Task AddUserToChatAsync(UserChat userChat);
 
 	/// <summary>
+	/// Updates the user with id userChat.UserId status in the chat of userChat.ChatId
+	/// </summary>
+	Task UpdateUserChatStatusAsync(UserChat userChat);
+
+	/// <summary>
 	/// Returns a record of UserChat join table of passed ids
 	/// </summary>
 	Task<UserChat> GetByIdAsync(int userId, int chatId);

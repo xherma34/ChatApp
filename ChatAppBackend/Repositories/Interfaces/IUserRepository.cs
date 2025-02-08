@@ -49,5 +49,8 @@ public interface IUserRepository
 	/// <param name="id">ID of a user to delete</param>
 	Task RemoveAsync(int id);
 
-
+	/// <summary>
+	/// Returns true if user of userId exists
+	/// </summary>
+	Task<bool> UserExists(int userId);
 }

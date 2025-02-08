@@ -65,5 +65,10 @@ public class UserRepository : IUserRepository
 		}
 	}
 
+	public async Task<bool> UserExists(int userId)
+	{
+		var user = await _dbContext.Users.FindAsync(userId);
 
+		return user == null ? false : true;
+	}
 }
