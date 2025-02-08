@@ -49,7 +49,6 @@ public class MessageService : BaseService, IMessageService
 
 		Message msg = new Message
 		{
-			Id = msgDto.Id,
 			Content = msgDto.Content,
 			TimeStamp = DateTime.Today,
 			UserId = msgDto.UserId,
