@@ -12,19 +12,13 @@ namespace ChatAppBackend.Services.Implementations;
 public class UserService : BaseService, IUserService
 {
 	private readonly IUserRepository _userRepository;
-	private readonly IMessageRepository _messageRepository;
-	private readonly IChatRepository _chatRepository;
 	private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
 	public UserService(
 		IUserRepository userRep,
-		IMessageRepository msgRep,
-		IChatRepository chatRep,
 		IHttpContextAccessor httpAcc) : base(httpAcc)
 	{
 		_userRepository = userRep;
-		_messageRepository = msgRep;
-		_chatRepository = chatRep;
 	}
 
 
