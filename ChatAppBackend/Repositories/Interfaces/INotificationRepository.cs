@@ -9,8 +9,8 @@ public interface INotificationRepository
 	// ----------------------- GET METHODS -----------------------
 	Task<Notification> GetByIdAsync(int id);
 	Task<IEnumerable<Notification>> GetAllByUserIdAsync(int userId);
-	Task<IEnumerable<Notification>> GetAllByTypeUserIdAsync(NotificationType type, int userId);
-	Task<IEnumerable<Notification>> GetAllByStatusUserIdAsync(NotificationStatus status, int userId);
+	Task<IEnumerable<Notification>> GetAllByTypeUserIdAsync(int userId, NotificationType type);
+	Task<IEnumerable<Notification>> GetAllByStatusUserIdAsync(int userId, NotificationStatus status);
 
 	// ----------------------- ADD METHODS -----------------------
 	Task AddAsync(Notification notif);

@@ -17,14 +17,14 @@ public class NotificationRepository : INotificationRepository
 	}
 
 	// ----------------------- GET METHODS -----------------------
-	public async Task<IEnumerable<Notification>> GetAllByStatusUserIdAsync(NotificationStatus status, int userId)
+	public async Task<IEnumerable<Notification>> GetAllByStatusUserIdAsync(int userId, NotificationStatus status)
 	{
 		return await _dbContext.Notifications
 			.Where(n => n.Status == status && n.UserId == userId)
 			.ToListAsync();
 	}
 
-	public async Task<IEnumerable<Notification>> GetAllByTypeUserIdAsync(NotificationType type, int userId)
+	public async Task<IEnumerable<Notification>> GetAllByTypeUserIdAsync(int userId, NotificationType type)
 	{
 		return await _dbContext.Notifications
 			.Where(n => n.Type == type && n.UserId == userId)
