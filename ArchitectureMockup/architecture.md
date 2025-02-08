@@ -7,6 +7,20 @@
 - Handle security (Rate-limiting, authentication, authorization)
 - Scale and Deploy (API gateway, microservices, Docker?)
 
+## Features to implement?
+- Sending friend requests and having friend lists
+  - Services update -> you can get information on friendly users
+  - Models update -> friends list object
+  - Relationship definition for DbContext
+- Blocking of other users
+  - User property BlockedUsers ->
+  - Update service logic -> blocked user's messages are not seen by the blockator and vice versa
+- Message reactions: create a table for this MessageReaction:
+  - id, messageid, userid, emoji (string)
+- Messages nested threading
+  - Add a ParentMessageId property to Message model and implement services for add (as threaded) etc.
+- Banning users from chat rooms or whole accounts
+
 ## Functionality
 - users can be part of a chat
 - Users can create and be part of groupchats
@@ -36,16 +50,24 @@
 |Date of join|||Content|Type|
 ||||Timestamp||
 
+### Model use case
+- **User**
+  - Gets his chats
+  - Participates in chats
+  - Writes messages
+  - Gets notifications
+  - Creates chats
+  - Manages people/chats based on role
+
 ### ER-diagram
 |Entity|Relationship|Entity|
 |-|-|-|
-|User (sends)|1-0..N|Message|
-|User (participates in)|1..N-1..N|Chat|
+|User (sends)|1-N|Message|
+|User (participates in)|N-N|Chat|
 |User (has)|1-0..N|Notification|
-|User (Links to chat)|1-0..N|UserChat|
-|Chat (Links to user)|1-0..N|UserChat|
-|Chat (has)| 1-0..N|Message|
-|Message (is a part of)|1-1|Chat|
+|User (Links to chat)|1-N|UserChat|
+|Chat (Links to user)|1-N|UserChat|
+|Chat (consists of)| 1-N|Message|
 
 ### TODO: ER-diagram scheme
 
