@@ -9,6 +9,7 @@ public class Message
 	// TODO: Create interface for this since it can either me a msg in a form of a string or an image
 	public string Content { get; set; } = string.Empty;
 	public DateTime TimeStamp { get; set; }
+	public DateTime? DeleteDate { get; set; }
 
 	// Message N - 1 User
 	// User foreign key
