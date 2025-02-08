@@ -16,7 +16,7 @@ public abstract class BaseService
 	/// Returns true if the user requesting the data has role admin
 	/// </summary>
 	/// <exception cref="UnauthorizedAccessException"></exception>
-	protected bool IsRequesterAdmin()
+	protected bool IsRequestorAdmin()
 	{
 		var userClaims = _httpContextAccessor.HttpContext?.User
 						 ?? throw new UnauthorizedAccessException("No user context available.");
@@ -29,7 +29,7 @@ public abstract class BaseService
 	/// <param name="userId">id of requested object</param>
 	/// <returns></returns>
 	/// <exception cref="UnauthorizedAccessException"></exception>
-	protected bool IsRequesterSameUser(int userId)
+	protected bool IsRequestorSameUser(int userId)
 	{
 		var userClaims = _httpContextAccessor.HttpContext?.User
 						 ?? throw new UnauthorizedAccessException("No user context available.");

@@ -30,7 +30,7 @@ public class MessageService : BaseService, IMessageService
 	public async Task AddMessage(MessageDto msgDto)
 	{
 		// Authority check -> IsSameUser
-		if (!IsRequesterSameUser(msgDto.UserId))
+		if (!IsRequestorSameUser(msgDto.UserId))
 			throw new UnauthorizedAccessException("Permission denied");
 
 		// Authority check -> user is within the chat
@@ -39,9 +39,13 @@ public class MessageService : BaseService, IMessageService
 
 		// Get user - check null
 		var user = await _userRepository.GetByIdAsync(msgDto.UserId);
+		if (user == null)
+			throw new ArgumentException($"User with id {msgDto.UserId} doesn't exist");
 
 		// Get chat - check null
 		var chat = await _chatRepository.GetByIdAsync(msgDto.ChatId);
+		if (chat == null)
+			throw new ArgumentException($"Chat with id {msgDto.ChatId} doesn't exist");
 
 		Message msg = new Message
 		{
@@ -61,8 +65,12 @@ public class MessageService : BaseService, IMessageService
 	public async Task<IEnumerable<MessageDto>> GetAllUserMessages(int userId)
 	{
 		// Check authority: SameId OR admin
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized access");
+
+		var exists = await _userRepository.UserExists(userId);
+		if (!exists)
+			throw new ArgumentException($"User with id {userId} doesn't exist");
 
 		var messages = await _msgRepository.GetAllByUserIdAsync(userId);
 
@@ -80,7 +88,7 @@ public class MessageService : BaseService, IMessageService
 	public async Task<MessageDto> GetById(int messageId, int userId)
 	{
 		// IsSameUser || Admin
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized access");
 
 		// var message = await _msgRepository.GetByIdAsync(messageId);
@@ -114,7 +122,7 @@ public class MessageService : BaseService, IMessageService
 		// Moderator -> message is in the chat where the requestor is Moderator => UserChat != null && UserChat.Status == moderator
 		// Is admin -> whenever
 
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId) && userChat.UserStatus != Enums.UserStatus.Moderator)
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId) && userChat.UserStatus != Enums.UserStatus.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of Remove message");
 
 		// Get message
@@ -135,7 +143,7 @@ public class MessageService : BaseService, IMessageService
 			throw new ArgumentException($"Message with id {messageId} doesn't exist");
 
 		// Authority
-		if (!IsRequesterSameUser(userId))
+		if (!IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of update message");
 
 		// Update msg content

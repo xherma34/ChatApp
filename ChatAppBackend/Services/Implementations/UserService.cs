@@ -57,7 +57,7 @@ public class UserService : BaseService, IUserService
 	public async Task<IEnumerable<UserDto>> GetAllAsync()
 	{
 
-		if (!IsRequesterAdmin())
+		if (!IsRequestorAdmin())
 			throw new UnauthorizedAccessException("Permission denied: Only admins can get all user objects");
 
 
@@ -80,7 +80,7 @@ public class UserService : BaseService, IUserService
 	public async Task<UserDto> GetByIdAsync(int id)
 	{
 		// Check authority permission
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(id))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(id))
 			throw new UnauthorizedAccessException("Permission denied: user cannot get other user objects");
 
 		var user = await _userRepository.GetByIdAsync(id);
@@ -102,7 +102,7 @@ public class UserService : BaseService, IUserService
 
 	public async Task RemoveByIdAsync(int id)
 	{
-		if (!IsRequesterSameUser(id))
+		if (!IsRequestorSameUser(id))
 			throw new UnauthorizedAccessException("Permission denied: users cannot delete other users");
 
 		// Check that the user with this id exists, if not throw exception
@@ -113,7 +113,7 @@ public class UserService : BaseService, IUserService
 	public async Task UpdateAsync(UserDto userDto, int userId)
 	{
 		// Authorization check
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userDto.Id))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userDto.Id))
 			throw new UnauthorizedAccessException("Permission denied, cannot change information of other users");
 
 		// Fetch user
@@ -133,7 +133,7 @@ public class UserService : BaseService, IUserService
 	public async Task UpdateMailAddressAsync(int userId, string mail, string password)
 	{
 		// Authorization check
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
@@ -163,7 +163,7 @@ public class UserService : BaseService, IUserService
 	public async Task UpdateNickNameAsync(int userId, string nickname)
 	{
 		// authorization check
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
@@ -179,7 +179,7 @@ public class UserService : BaseService, IUserService
 	public async Task UpdatePasswordAsync(string password, string oldPassword, int userId)
 	{
 		// authorization check
-		if (!IsRequesterAdmin() && !IsRequesterSameUser(userId))
+		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
