@@ -21,6 +21,11 @@ public interface IUserChatRepository
 	Task AddUserToChatAsync(UserChat userChat);
 
 	/// <summary>
+	/// Returns a record of UserChat join table of passed ids
+	/// </summary>
+	Task<UserChat> GetByIdAsync(int userId, int chatId);
+
+	/// <summary>
 	/// Returns a list of all users that are a part of chat with ID chatId
 	/// </summary>
 	/// <param name="chatId">Id of chat room</param>
@@ -32,4 +37,17 @@ public interface IUserChatRepository
 	/// <param name="userId">Id of user</param>
 	Task<IEnumerable<Chat>> GetAllChatsOfUserAsync(int userId);
 
+	// OTHERS
+	/// <summary>
+	/// Returns true if user with userId is a part of the chat of chatId
+	/// </summary>
+	public bool IsUserInChat(int userId, int chatId);
+
+	// /// <summary>
+	// /// Returns true if user with id has a status of moderator in chat chatId
+	// /// </summary>
+	// /// <param name="userId"></param>
+	// /// <param name="chatId"></param>
+	// /// <returns></returns>
+	// Task<bool> IsUserChatModerator(int userId, int chatId);
 }

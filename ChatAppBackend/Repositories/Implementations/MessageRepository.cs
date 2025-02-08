@@ -30,10 +30,12 @@ public class MessageRepository : IMessageRepository
 			.ToListAsync();
 	}
 
-	public async Task GetByIdAsync(int id)
+	public async Task<Message> GetByIdAsync(int id)
 	{
-		var msg = await _dbContext.Messages.FindAsync(id);
-		if (msg == null) throw new KeyNotFoundException($"Message with ID {id} not found.");
+		// if (msg == null) throw new KeyNotFoundException($"Message with ID {id} not found.");
+#pragma warning disable CS8603 // Possible null reference return.
+		return await _dbContext.Messages.FindAsync(id);
+#pragma warning restore CS8603 // Possible null reference return.
 	}
 
 	// ----------------------- ADD METHODS -----------------------

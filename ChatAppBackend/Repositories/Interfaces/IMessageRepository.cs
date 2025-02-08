@@ -16,7 +16,7 @@ public interface IMessageRepository
 	/// Get singular message with its ID
 	/// </summary>
 	/// <param name="id">Message Id</param>
-	Task GetByIdAsync(int id);
+	Task<Message> GetByIdAsync(int id);
 
 	/// <summary>
 	/// Get all messages within a chat of chatId that were sent by user of userId

@@ -32,6 +32,14 @@ public class UserChatRepository : IUserChatRepository
 		await _dbContext.SaveChangesAsync();
 	}
 
+	public async Task<UserChat> GetByIdAsync(int userId, int chatId)
+	{
+#pragma warning disable CS8603 // Possible null reference return.
+		return await _dbContext.UserChats
+			.FirstOrDefaultAsync(uc => uc.ChatId == chatId && uc.UserId == userId);
+#pragma warning restore CS8603 // Possible null reference return.
+	}
+
 	public async Task<IEnumerable<Chat>> GetAllChatsOfUserAsync(int userId)
 	{
 		return await _dbContext.UserChats
@@ -47,6 +55,23 @@ public class UserChatRepository : IUserChatRepository
 		.Select(uc => uc.User)
 		.ToListAsync();
 	}
+
+	public bool IsUserInChat(int userId, int chatId)
+	{
+		return _dbContext.UserChats
+			.Any(uc => uc.UserId == userId && uc.ChatId == chatId);
+	}
+
+	// public async Task<bool> IsUserChatModerator(int userId, int chatId)
+	// {
+	// 	var userChat = await GetUserChatById(userId, chatId);
+	// 	if (userChat == null)
+	// 		throw new ArgumentException($"UserChat record with user id {userId} and chat id {chatId} doesnt exist");
+
+	// 	return userChat.UserStatus == Enums.UserStatus.Moderator ? true : false;
+	// }
+
+
 
 
 }
