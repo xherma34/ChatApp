@@ -13,4 +13,6 @@ public class MessageDto
 
 	public int UserId { get; set; }
 	public int ChatId { get; set; }
+	public int? RequestorId { get; set; }
+	public bool? IsAdmin { get; set; }
 }

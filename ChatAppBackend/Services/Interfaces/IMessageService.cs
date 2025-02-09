@@ -8,12 +8,12 @@ public interface IMessageService
 	/// <summary>
 	/// Returns a message of ID
 	/// </summary>
-	Task<MessageDto> GetById(int messageId, int userId); // admin/sender
+	Task<MessageDto> GetById(MessageDto msgDto); // admin/sender
 
 	/// <summary>
 	/// Returns all messages sent by user
 	/// </summary>
-	Task<IEnumerable<MessageDto>> GetAllUserMessages(int userId);
+	Task<IEnumerable<MessageDto>> GetAllUserMessages(MessageDto msgDto);
 
 	/// <summary>
 	/// Adds a new message
@@ -26,12 +26,12 @@ public interface IMessageService
 	/// </summary>
 	/// <param name="messageId">Id of message</param>
 	/// <param name="newContent">Changed content of the message</param>
-	Task UpdateMessage(int messageId, int userId, string newContent); // IsSameUser
+	Task UpdateMessage(MessageDto msgDto); // IsSameUser
 
 	/// <summary>
 	/// Removes message with id
 	/// </summary>
-	Task RemoveMessage(int messageId, int chatId, int userId);
+	Task RemoveMessage(MessageDto msgDto);
 
 	// Consider moving these to IChatService
 	// IEnumerable<MessageDto> GetAllMessagesWithinChat(int chatId); // Participants/Admins

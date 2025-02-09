@@ -7,16 +7,15 @@ using ChatAppBackend.Services.Interfaces;
 
 namespace ChatAppBackend.Services.Implementations;
 // TODO: Deal with authorization
-public class NotificationService : BaseService, INotificationService
+public class NotificationService : INotificationService
 {
 	private readonly INotificationRepository _notifRepository;
 	private readonly IUserRepository _userRepository;
 
 	public NotificationService(
-		IHttpContextAccessor httpContextAccessor,
 		INotificationRepository notifRepo,
 		IUserRepository userRepo
-		) : base(httpContextAccessor)
+		)
 	{
 		_notifRepository = notifRepo;
 		_userRepository = userRepo;

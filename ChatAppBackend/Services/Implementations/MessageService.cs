@@ -6,7 +6,7 @@ using ChatAppBackend.Services.Interfaces;
 
 namespace ChatAppBackend.Services.Implementations;
 
-public class MessageService : BaseService, IMessageService
+public class MessageService : IMessageService
 {
 	private readonly IUserRepository _userRepository;
 	private readonly IChatRepository _chatRepository;
@@ -14,12 +14,11 @@ public class MessageService : BaseService, IMessageService
 	private readonly IUserChatRepository _userChatRepository;
 
 	public MessageService(
-		IHttpContextAccessor httpContextAccessor,
 		IUserRepository userRep,
 		IMessageRepository msgRep,
 		IChatRepository chatRep,
 		IUserChatRepository userChatRep
-	) : base(httpContextAccessor)
+	)
 	{
 		_userRepository = userRep;
 		_msgRepository = msgRep;
@@ -29,8 +28,11 @@ public class MessageService : BaseService, IMessageService
 
 	public async Task AddMessage(MessageDto msgDto)
 	{
+		if (msgDto.RequestorId == null)
+			throw new ArgumentException("Missing required arguments (RequestorId) to add message");
+
 		// Authority check -> IsSameUser
-		if (!IsRequestorSameUser(msgDto.UserId))
+		if (msgDto.UserId != (int)msgDto.RequestorId)
 			throw new UnauthorizedAccessException("Permission denied");
 
 		// Authority check -> user is within the chat
@@ -61,17 +63,20 @@ public class MessageService : BaseService, IMessageService
 
 	}
 
-	public async Task<IEnumerable<MessageDto>> GetAllUserMessages(int userId)
+	public async Task<IEnumerable<MessageDto>> GetAllUserMessages(MessageDto msgDto)
 	{
 		// Check authority: SameId OR admin
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
+		if (msgDto.IsAdmin == null || msgDto.RequestorId == null)
+			throw new ArgumentException("Missing required argument (IsAdmin or RequestorId)");
+
+		if (!(bool)msgDto.IsAdmin && (int)msgDto.RequestorId != msgDto.UserId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized access");
 
-		var exists = await _userRepository.UserExists(userId);
+		var exists = await _userRepository.UserExists(msgDto.UserId);
 		if (!exists)
-			throw new ArgumentException($"User with id {userId} doesn't exist");
+			throw new ArgumentException($"User with id {msgDto.UserId} doesn't exist");
 
-		var messages = await _msgRepository.GetAllByUserIdAsync(userId);
+		var messages = await _msgRepository.GetAllByUserIdAsync(msgDto.UserId);
 
 		return messages.Select(m => new MessageDto
 		{
@@ -79,26 +84,28 @@ public class MessageService : BaseService, IMessageService
 			Content = m.Content,
 			TimeStamp = m.TimeStamp,
 			DeleteDate = m.DeleteDate,
-			UserId = userId,
+			UserId = msgDto.UserId,
 			ChatId = m.ChatId
 		});
 	}
 
-	public async Task<MessageDto> GetById(int messageId, int userId)
+	public async Task<MessageDto> GetById(MessageDto msgDto)
 	{
+		if (msgDto.IsAdmin == null || msgDto.RequestorId == null)
+			throw new ArgumentException("Missing required argument (IsAdmin or RequestorId)");
 		// IsSameUser || Admin
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
+		if (!(bool)msgDto.IsAdmin && (int)msgDto.RequestorId != msgDto.UserId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized access");
 
 		// var message = await _msgRepository.GetByIdAsync(messageId);
-		var msg = await _msgRepository.GetByIdAsync(messageId);
+		var msg = await _msgRepository.GetByIdAsync(msgDto.Id);
 
 		if (msg == null)
-			throw new ArgumentException($"Message with id {messageId} doesn't exist");
+			throw new ArgumentException($"Message with id {msgDto.Id} doesn't exist");
 
 		return new MessageDto
 		{
-			Id = messageId,
+			Id = msgDto.Id,
 			Content = msg.Content,
 			TimeStamp = msg.TimeStamp,
 			UserId = msg.UserId,
@@ -107,46 +114,52 @@ public class MessageService : BaseService, IMessageService
 
 	}
 
-	public async Task RemoveMessage(int messageId, int chatId, int userId)
+	public async Task RemoveMessage(MessageDto msgDto)
 	{
 		// Get the userChat record for userId, chatId
-		var userChat = await _userChatRepository.GetByIdAsync(userId, chatId);
+		var userChat = await _userChatRepository.GetByIdAsync(msgDto.UserId, msgDto.ChatId);
 
 		// Check if null
 		if (userChat == null)
-			throw new ArgumentException($"UserChat record with user id {userId} and chat id {chatId} doesnt exist");
+			throw new ArgumentException($"UserChat record with user id {msgDto.UserId} and chat id {msgDto.ChatId} doesnt exist");
 
 		// Authority: isSameUser/isAdmin/moderator
 		// Same user -> User is in the chat of MSG => userChat != null && IsRequesterSameUser()
 		// Moderator -> message is in the chat where the requestor is Moderator => UserChat != null && UserChat.Status == moderator
 		// Is admin -> whenever
 
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId) && userChat.UserStatus != Enums.UserStatus.Moderator)
-			throw new UnauthorizedAccessException("Permission denied: unauthorized call of Remove message");
+		if (msgDto.IsAdmin == null || msgDto.RequestorId == null)
+			throw new ArgumentException("Missing required argument (IsAdmin or RequestorId)");
+		// IsSameUser || Admin
+		if (!(bool)msgDto.IsAdmin && (int)msgDto.RequestorId != msgDto.UserId)
+			throw new UnauthorizedAccessException("Permission denied: unauthorized access");
 
 		// Get message
-		var msg = await _msgRepository.GetByIdAsync(messageId);
+		var msg = await _msgRepository.GetByIdAsync(msgDto.Id);
 		// Check for null
 		if (msg == null)
-			throw new ArgumentException($"Message with id {messageId} doesn't exist");
+			throw new ArgumentException($"Message with id {msgDto.Id} doesn't exist");
 
-		await _msgRepository.RemoveAsync(messageId);
+		await _msgRepository.RemoveAsync(msgDto.Id);
 	}
 
-	public async Task UpdateMessage(int messageId, int userId, string newContent)
+	public async Task UpdateMessage(MessageDto msgDto)
 	{
+		if (msgDto.RequestorId == null)
+			throw new ArgumentException("Missing required argument (requestorId)");
+
 		// Get message
-		var msg = await _msgRepository.GetByIdAsync(messageId);
+		var msg = await _msgRepository.GetByIdAsync(msgDto.Id);
 		// Check for null
 		if (msg == null)
-			throw new ArgumentException($"Message with id {messageId} doesn't exist");
+			throw new ArgumentException($"Message with id {msgDto.Id} doesn't exist");
 
 		// Authority
-		if (!IsRequestorSameUser(userId))
+		if (msgDto.RequestorId != msgDto.UserId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of update message");
 
 		// Update msg content
-		msg.Content = newContent;
+		msg.Content = msgDto.Content;
 
 		// Call update
 		await _msgRepository.UpdateAsync(msg);
