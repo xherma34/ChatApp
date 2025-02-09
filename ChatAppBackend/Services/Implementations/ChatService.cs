@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ChatAppBackend.Services.Implementations;
 
-public class ChatService : BaseService, IChatService
+public class ChatService : IChatService
 {
 
 	private readonly IChatRepository _chatRepository;
@@ -15,11 +15,10 @@ public class ChatService : BaseService, IChatService
 	private readonly IUserRepository _userRepository;
 
 	public ChatService(
-		IHttpContextAccessor httpContextAccessor,
 		IChatRepository chatRepo,
 		IUserChatRepository ucRepo,
 		IUserRepository userRepo
-		) : base(httpContextAccessor)
+		)
 	{
 		_chatRepository = chatRepo;
 		_userChatRepository = ucRepo;
@@ -42,12 +41,12 @@ public class ChatService : BaseService, IChatService
 
 	}
 
-	public async Task<IEnumerable<ChatDto>> GetAllAsync(int requestorId)
+	public async Task<IEnumerable<ChatDto>> GetAllAsync(int requestorId, bool isAdmin)
 	{
 
 		var exists = _userRepository.UserExists(requestorId);
 		// All registered users can access chat rooms
-		if (!IsRequestorAdmin())
+		if (!isAdmin)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized access of Get all chats");
 
 		var chats = await _chatRepository.GetAllAsync();
@@ -78,27 +77,38 @@ public class ChatService : BaseService, IChatService
 		};
 	}
 
-	public async Task RemoveAsync(int requestorId, int chatId)
+	public async Task RemoveAsync(int requestorId, int chatId, bool isAdmin)
 	{
 		// Check if admin -yes-> remove
-		if (IsRequestorAdmin())
+		if (isAdmin)
 		{
 			await _chatRepository.RemoveAsync(chatId);
 			return;
 		}
 
-		var cu = await _userChatRepository.GetByIdAsync(requestorId, chatId);
-		if (cu == null || cu.UserStatus != Enums.UserStatus.Moderator)
+		var uc = await _userChatRepository.GetByIdAsync(requestorId, chatId);
+		if (uc == null || uc.UserStatus != Enums.UserStatus.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: only moderators and admins can remove chat rooms");
 
 		await _chatRepository.RemoveAsync(chatId);
 
 	}
 
-	public async Task UpdateNameAsync(int requestorId, ChatDto chatDto)
+	public async Task UpdateNameAsync(int requestorId, ChatDto chatDto, bool isAdmin)
 	{
+		// Check name field
 		if (string.IsNullOrWhiteSpace(chatDto.Name))
 			throw new ArgumentException("Missing required field name for update chat name");
+
+		// Check that ID exists
+		if (chatDto.Id == null)
+			throw new ArgumentException("Chat ID cannot be null for update method");
+
+		// Check authority
+		var uc = await _userChatRepository.GetByIdAsync(requestorId, (int)chatDto.Id);
+
+		if (!isAdmin && uc.UserStatus != Enums.UserStatus.Moderator)
+			throw new UnauthorizedAccessException("Permission denied: only moderators or admins can update chat info");
 
 		await _chatRepository.UpdateAsync(new Chat { Name = chatDto.Name });
 	}

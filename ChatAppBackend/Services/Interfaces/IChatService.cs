@@ -14,7 +14,7 @@ public interface IChatService
 	/// <summary>
 	/// Tries to return a list of all existing chats
 	/// </summary>
-	Task<IEnumerable<ChatDto>> GetAllAsync(int requestorId);
+	Task<IEnumerable<ChatDto>> GetAllAsync(int requestorId, bool isAdmin);
 
 	/// <summary>
 	/// Adds a new chat 
@@ -24,10 +24,10 @@ public interface IChatService
 	/// <summary>
 	/// Updates an existing chat
 	/// </summary>
-	Task UpdateNameAsync(int requestorId, ChatDto chat);
+	Task UpdateNameAsync(int requestorId, ChatDto chat, bool isAdmin);
 
 	/// <summary>
 	/// Removes a chat with ID chatId
 	/// </summary>
-	Task RemoveAsync(int requestorId, int chatId);
+	Task RemoveAsync(int requestorId, int chatId, bool isAdmin);
 }

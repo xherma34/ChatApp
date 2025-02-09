@@ -9,14 +9,13 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ChatAppBackend.Services.Implementations;
 
-public class UserService : BaseService, IUserService
+public class UserService : IUserService
 {
 	private readonly IUserRepository _userRepository;
 	private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
 	public UserService(
-		IUserRepository userRep,
-		IHttpContextAccessor httpAcc) : base(httpAcc)
+		IUserRepository userRep)
 	{
 		_userRepository = userRep;
 	}
@@ -54,10 +53,10 @@ public class UserService : BaseService, IUserService
 
 	}
 
-	public async Task<IEnumerable<UserDto>> GetAllAsync()
+	public async Task<IEnumerable<UserDto>> GetAllAsync(bool isAdmin)
 	{
 
-		if (!IsRequestorAdmin())
+		if (!isAdmin)
 			throw new UnauthorizedAccessException("Permission denied: Only admins can get all user objects");
 
 
@@ -77,17 +76,17 @@ public class UserService : BaseService, IUserService
 		});
 	}
 
-	public async Task<UserDto> GetByIdAsync(int id)
+	public async Task<UserDto> GetByIdAsync(int userId, int requestorId, bool isAdmin)
 	{
 		// Check authority permission
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(id))
+		if (!isAdmin && requestorId != userId)
 			throw new UnauthorizedAccessException("Permission denied: user cannot get other user objects");
 
-		var user = await _userRepository.GetByIdAsync(id);
+		var user = await _userRepository.GetByIdAsync(userId);
 
 		// Check existence of user
 		if (user == null)
-			throw new KeyNotFoundException($"No user with id {id} found");
+			throw new KeyNotFoundException($"No user with id {userId} found");
 
 		// Return new object
 		return new UserDto
@@ -100,20 +99,20 @@ public class UserService : BaseService, IUserService
 		};
 	}
 
-	public async Task RemoveByIdAsync(int id)
+	public async Task RemoveByIdAsync(int userId, int requestorId)
 	{
-		if (!IsRequestorSameUser(id))
+		if (userId != requestorId)
 			throw new UnauthorizedAccessException("Permission denied: users cannot delete other users");
 
 		// Check that the user with this id exists, if not throw exception
 
-		await _userRepository.RemoveAsync(id);
+		await _userRepository.RemoveAsync(userId);
 	}
 
-	public async Task UpdateAsync(UserDto userDto, int userId)
+	public async Task UpdateAsync(UserDto userDto, int userId, int requestorId, bool isAdmin)
 	{
 		// Authorization check
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userDto.Id))
+		if (!isAdmin && userId != requestorId)
 			throw new UnauthorizedAccessException("Permission denied, cannot change information of other users");
 
 		// Fetch user
@@ -130,10 +129,10 @@ public class UserService : BaseService, IUserService
 		await _userRepository.UpdateAsync(user);
 	}
 
-	public async Task UpdateMailAddressAsync(int userId, string mail, string password)
+	public async Task UpdateMailAddressAsync(int userId, string mail, string password, bool isAdmin, int requestorId)
 	{
 		// Authorization check
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
+		if (!isAdmin && userId != requestorId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
@@ -160,26 +159,10 @@ public class UserService : BaseService, IUserService
 		await _userRepository.UpdateAsync(user);
 	}
 
-	public async Task UpdateNickNameAsync(int userId, string nickname)
+	public async Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId)
 	{
 		// authorization check
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
-			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
-
-		// fetch user
-		var user = await _userRepository.GetByIdAsync(userId);
-		if (user == null)
-			throw new KeyNotFoundException($"User with id {userId} not found");
-
-		// update
-		user.Nickname = nickname;
-		await _userRepository.UpdateAsync(user);
-	}
-
-	public async Task UpdatePasswordAsync(string password, string oldPassword, int userId)
-	{
-		// authorization check
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
+		if (!isAdmin && requestorId != userId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user

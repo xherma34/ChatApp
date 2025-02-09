@@ -1,4 +1,5 @@
 using System;
+using ChatAppBackend.Controllers.DTOs;
 using ChatAppBackend.DTOs;
 using ChatAppBackend.Enums;
 using ChatAppBackend.Models;
@@ -7,18 +8,17 @@ using ChatAppBackend.Services.Interfaces;
 
 namespace ChatAppBackend.Services.Implementations;
 
-public class UserChatService : BaseService, IUserChatService
+public class UserChatService : IUserChatService
 {
 	private readonly IUserRepository _userRepository;
 	private readonly IChatRepository _chatRepository;
 	private readonly IUserChatRepository _userChatRepository;
 
 	public UserChatService(
-		IHttpContextAccessor httpContextAccessor,
 		IUserRepository userRepo,
 		IChatRepository chatRepo,
 		IUserChatRepository userChatRepo
-		) : base(httpContextAccessor)
+		)
 	{
 		_userRepository = userRepo;
 		_chatRepository = chatRepo;
@@ -26,11 +26,11 @@ public class UserChatService : BaseService, IUserChatService
 
 	}
 
-	public async Task AddUserToChat(int userId, int chatId)
+	public async Task AddUserToChat(int requestorId, int userId, int chatId)
 	{
 		// TODO: Add functionality that users can be banned from channels -> here you check if they are banned
 		// IsSameId
-		if (!IsRequestorSameUser(userId))
+		if (requestorId != userId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of add user to chat");
 
 		// User not null
@@ -54,22 +54,25 @@ public class UserChatService : BaseService, IUserChatService
 		await _userChatRepository.AddUserToChatAsync(userChat);
 	}
 
-	public async Task<IEnumerable<ChatDto>> GetAllChatsOfUser(int userId)
+	public async Task<IEnumerable<ChatDto>> GetAllChatsOfUser(UserChatRequest ucReq)
 	{
+		if (ucReq.UserId == null || ucReq.IsAdmin == null || ucReq.RequestorId == null)
+			throw new ArgumentException($"Missing required data to fetch chats of user");
+
 		// IsAdmin || IsSameId
-		if (!IsRequestorAdmin() && !IsRequestorSameUser(userId))
+		if (!(bool)ucReq.IsAdmin && (int)ucReq.RequestorId != (int)ucReq.UserId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of get all user's chats");
 
 		// User exists
-		var exists = await _userRepository.UserExists(userId);
+		var exists = await _userRepository.UserExists((int)ucReq.UserId);
 		if (!exists)
-			throw new KeyNotFoundException($"User with id {userId} doesn't exist");
+			throw new KeyNotFoundException($"User with id {(int)ucReq.UserId} doesn't exist");
 
 		// Get list of chats
-		var chats = await _userChatRepository.GetAllChatsOfUserAsync(userId);
+		var chats = await _userChatRepository.GetAllChatsOfUserAsync((int)ucReq.UserId);
 		// Check they are not null or empty
 		if (chats == null || chats.Count() == 0)
-			throw new ArgumentException($"User {userId} isn't part of any chats");
+			throw new ArgumentException($"User {(int)ucReq.UserId} isn't part of any chats");
 
 		// return list of dto's
 		return chats.Select(c => new ChatDto
@@ -79,19 +82,23 @@ public class UserChatService : BaseService, IUserChatService
 		});
 	}
 
-	public async Task<IEnumerable<UserDto>> GetAllUsersInChat(int chatId, int userId)
+	public async Task<IEnumerable<UserDto>> GetAllUsersInChat(UserChatRequest data)
 	{
+		// Check data
+		if (data.ChatId == null || data.RequestorId == null || data.IsAdmin == null)
+			throw new ArgumentException($"Missing required data to fetch users of chat");
+
 		// Get any occurence of: UserChat (chatId, requestorID)
-		var isInChat = _userChatRepository.IsUserInChat(userId, chatId);
+		var isInChat = _userChatRepository.IsUserInChat((int)data.RequestorId, (int)data.ChatId);
 		// authority: IsPartOfChat || IsAdmin
-		if (!isInChat && IsRequestorAdmin())
+		if (!isInChat && !(bool)data.IsAdmin)
 			throw new UnauthorizedAccessException($"Permission denied: unauthorized call of get all users in chat");
 
 		// Get all users chats
-		var users = await _userChatRepository.GetAllUsersInChatAsync(chatId);
+		var users = await _userChatRepository.GetAllUsersInChatAsync((int)data.ChatId);
 		// check not null
 		if (users == null)
-			throw new ArgumentException($"No records of users in chat ${chatId}");
+			throw new ArgumentException($"No records of users in chat ${(int)data.ChatId}");
 
 		// return dto
 		return users.Select(u => new UserDto
@@ -102,7 +109,7 @@ public class UserChatService : BaseService, IUserChatService
 		});
 	}
 
-	public async Task<UserChatDto> GetById(int userId, int chatId)
+	public async Task<UserChatDto> GetByIdAsync(int userId, int chatId)
 	{
 		var userChat = await _userChatRepository.GetByIdAsync(userId, chatId);
 
@@ -117,22 +124,25 @@ public class UserChatService : BaseService, IUserChatService
 		};
 	}
 
-	public async Task RemoveUserFromChat(int userId, int chatId)
+	public async Task RemoveUserFromChat(UserChatRequest ucReq)
 	{
+		if (ucReq.UserId == null || ucReq.ChatId == null || ucReq.RequestorId == null)
+			throw new ArgumentException($"Missing required data to remove user from chat");
+
 		// Record of UserChat exists
-		var userChat = await _userChatRepository.GetByIdAsync(userId, chatId);
+		var userChat = await _userChatRepository.GetByIdAsync((int)ucReq.UserId, (int)ucReq.ChatId);
 		if (userChat == null)
-			throw new ArgumentException($"User {userId} is not in chat {chatId}: cannot remove");
+			throw new ArgumentException($"User {ucReq.UserId} is not in chat {ucReq.ChatId}: cannot remove");
 
 		// IsModerator || IsSameUser
-		if (!IsRequestorSameUser(userId) && userChat.UserStatus != UserStatus.Moderator)
+		if ((int)ucReq.RequestorId != (int)ucReq.UserId && userChat.UserStatus != UserStatus.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of remove user from chat");
 
 		// call repository
-		await _userChatRepository.RemoveUserFromChatAsync(userId, chatId);
+		await _userChatRepository.RemoveUserFromChatAsync((int)ucReq.UserId, (int)ucReq.ChatId);
 	}
 
-	public async Task UpdateUserChatStatus(int requestorId, UserChatDto ucDto)
+	public async Task UpdateUserChatStatus(int requestorId, bool isAdmin, UserChatDto ucDto)
 	{
 		// IsModerator of chat -> THE REQUESTOR
 		var requestorChat = await _userChatRepository.GetByIdAsync(requestorId, ucDto.ChatId);
@@ -140,7 +150,7 @@ public class UserChatService : BaseService, IUserChatService
 			throw new ArgumentException($"User {requestorId} is not a part of chat {ucDto.ChatId}");
 
 		// Is the moderator of chat || admin
-		if (requestorChat.UserStatus != UserStatus.Moderator && IsRequestorAdmin())
+		if (requestorChat.UserStatus != UserStatus.Moderator && !isAdmin)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of change user chat status");
 
 		// Get the userChat of userId

@@ -9,13 +9,13 @@ public interface IUserService
 	/// <summary>
 	///	Get user by ID -> Admin || same ID 
 	/// </summary>
-	Task<UserDto> GetByIdAsync(int id);
+	Task<UserDto> GetByIdAsync(int userId, int requestorId, bool isAdmin);
 
 	/// <summary>
 	/// Get all users -> Admin 
 	/// </summary>
 	/// <returns></returns>
-	Task<IEnumerable<UserDto>> GetAllAsync();
+	Task<IEnumerable<UserDto>> GetAllAsync(bool isAdmin);
 
 
 	/// <summary>
@@ -28,15 +28,15 @@ public interface IUserService
 	/// <summary>
 	/// Delete user -> same id
 	/// </summary>
-	Task RemoveByIdAsync(int id);
+	Task RemoveByIdAsync(int userId, int requestorId);
 
 	/// <summary>
 	/// Update user -> same id || admin
 	/// </summary>
-	Task UpdateAsync(UserDto userDto, int userId);
+	Task UpdateAsync(UserDto userDto, int userId, int requestorId, bool isAdmin);
 
-	Task UpdateMailAddressAsync(int userId, string mail, string password);
+	Task UpdateMailAddressAsync(int userId, string mail, string password, bool isAdmin, int requestorId);
 
-	Task UpdatePasswordAsync(string password, string oldPassword, int userId);
+	Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId);
 
 }
