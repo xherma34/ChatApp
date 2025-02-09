@@ -1,6 +1,8 @@
 using ChatAppBackend.Data;
 using ChatAppBackend.Repositories.Implementations;
 using ChatAppBackend.Repositories.Interfaces;
+using ChatAppBackend.Services.Implementations;
+using ChatAppBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +25,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
 
-
+// Register services
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IUserChatService, UserChatService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
