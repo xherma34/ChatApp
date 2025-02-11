@@ -35,9 +35,10 @@ public interface IUserService
 	/// </summary>
 	Task UpdateAsync(UserDto userDto, int userId, int requestorId, bool isAdmin);
 
-	Task UpdateMailAddressAsync(int userId, string mail, string password, bool isAdmin, int requestorId);
+	Task UpdateMailAddressAsync(UserDto userDto, string newEmail, bool isAdmin, int requestorId);
 
-	Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId);
+	Task UpdatePasswordAsync(UserDto userDto, string newPassword, bool isAdmin, int requestorId);
+	// Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId);
 
 	Task UpdateRefreshTokenAsync(string token);
 }

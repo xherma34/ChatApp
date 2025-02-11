@@ -4,7 +4,13 @@ using ChatAppBackend.Repositories.Interfaces;
 using ChatAppBackend.Services.Implementations;
 using ChatAppBackend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using ChatAppBackend.Models;
+using ChatAppBackend.POCO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +28,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register IHttpContextAccessor (used in your services)
 builder.Services.AddHttpContextAccessor();
 
+// Register password hasher
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
 // Register Repositories (Data Access Layer)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
@@ -35,6 +44,35 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Register JwtOptions from Configuration**
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+// Get JwtSettings for Authentication**
+var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
+
+if (jwtSettings == null)
+    throw new ArgumentException("Couldn't load jwt secret key");
+
+// Configure Authentication with JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+        };
+    });
+
+// Register TokenService**
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 
@@ -45,13 +83,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Enable HTTPS Redirection
-app.UseHttpsRedirection();
-
+// Middleware setup:
+app.UseHttpsRedirection(); // Enable HTTPS Redirection
 app.UseRouting(); // Routing middleware (still required for non-minimal APIs)
-// app.UseAuthorization(); // Enable role-based authorization
-
-// 🔹 Replace UseEndpoints with this
+app.UseAuthentication(); // Enables JWT authentication
+app.UseAuthorization(); // Enable role-based authorization
 app.MapControllers(); // Maps API routes to controllers automatically
 
 app.Run();

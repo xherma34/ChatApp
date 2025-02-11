@@ -4,7 +4,6 @@ namespace ChatAppBackend.Controllers.DTOs;
 
 public class AuthRequest
 {
-	// For token refresher
 	public int? RequestorId { get; set; }
 
 	// User credentials for login

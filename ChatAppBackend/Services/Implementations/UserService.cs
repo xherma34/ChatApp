@@ -53,7 +53,7 @@ public class UserService : IUserService
 			MailAddress = userDto.MailAddress,
 			JoinDate = DateTime.Today,
 			IsBanned = false,
-			Role = userDto.Role
+			Role = Enums.UserRole.Regular
 		};
 
 		user.PasswordHash = _passwordHasher.HashPassword(user, userDto.Password);
@@ -118,6 +118,7 @@ public class UserService : IUserService
 		await _userRepository.RemoveAsync(userId);
 	}
 
+	// TODO: get the code prettier -> take a look if it is a good practice to put helper methods inside of service classes and if so, create them
 	public async Task UpdateAsync(UserDto userDto, int userId, int requestorId, bool isAdmin)
 	{
 		// Authorization check
@@ -139,58 +140,63 @@ public class UserService : IUserService
 	}
 
 	// TODO: Rewrite, dont put the password logic here, use authentication service and verifyPassword
-	public async Task UpdateMailAddressAsync(int userId, string mail, string password, bool isAdmin, int requestorId)
+	public async Task UpdateMailAddressAsync(UserDto userDto, string newEmail, bool isAdmin, int requestorId)
 	{
+		if (userDto.Password == null)
+			throw new ArgumentException("Missing required field password in update mail address method");
 		// Authorization check
-		if (!isAdmin && userId != requestorId)
+		if (!isAdmin && userDto.Id != requestorId)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
-		var user = await _userRepository.GetByIdAsync(userId);
+		var user = await _userRepository.GetByIdAsync(userDto.Id);
 		if (user == null)
-			throw new KeyNotFoundException($"User with id {userId} not found");
+			throw new KeyNotFoundException($"User with id {userDto.Id} not found");
 
 		// Check that user entered the right password
 		// User passed correct password
-		if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Success)
+		if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userDto.Password) != PasswordVerificationResult.Success)
 			throw new UnauthorizedAccessException("Permission denied: wrong password");
 
 		// Validate email format
-		if (string.IsNullOrWhiteSpace(mail) || !new EmailAddressAttribute().IsValid(mail))
+		if (string.IsNullOrWhiteSpace(newEmail) || !new EmailAddressAttribute().IsValid(newEmail))
 			throw new ArgumentException("Invalid mail format");
 
 		// Ensure uniquenes of email
-		var mailUser = await _userRepository.GetByMailAddressAsync(mail);
+		var mailUser = await _userRepository.GetByMailAddressAsync(newEmail);
 		if (mailUser != null)
-			throw new ArgumentException($"Account with this email address: {mail} already exists");
+			throw new ArgumentException($"Account with this email address: {newEmail} already exists");
 
 		// Update
-		user.MailAddress = mail;
+		user.MailAddress = newEmail;
 		await _userRepository.UpdateAsync(user);
 	}
 
-	// TODO: Rewrite, dont put the password logic here, use authentication service and verifyPassword
-	public async Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId)
+	public async Task UpdatePasswordAsync(UserDto userDto, string newPassword, bool isAdmin, int requestorId)
 	{
+		// No null values passed via dto:
+		if (userDto.Password == null)
+			throw new ArgumentException("Missing required field of password in update password");
+
 		// authorization check
-		if (!isAdmin && requestorId != userId)
+		if (!isAdmin && requestorId != userDto.Id)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized change operation");
 
 		// fetch user
-		var user = await _userRepository.GetByIdAsync(userId);
+		var user = await _userRepository.GetByIdAsync(userDto.Id);
 		if (user == null)
-			throw new KeyNotFoundException($"User with id {userId} not found");
+			throw new KeyNotFoundException($"User with id {userDto.Id} not found");
 
 		// User passed correct password
-		if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword) != PasswordVerificationResult.Success)
+		if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userDto.Password) != PasswordVerificationResult.Success)
 			throw new UnauthorizedAccessException("Permission denied: wrong password");
 
 		// Check hash of password != oldPassword
-		if (password == oldPassword)
+		if (newPassword == userDto.Password)
 			throw new ArgumentException("New password cannot be same as the old password");
 
 		// update
-		user.PasswordHash = _passwordHasher.HashPassword(user, password);
+		user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
 		await _userRepository.UpdateAsync(user);
 	}
 

@@ -32,7 +32,7 @@ public class UserController : BaseController
 	{
 		try
 		{
-			var user = await _userService.GetByIdAsync(id, RequestorId, IsAdmin);
+			var user = await _userService.GetByIdAsync(id, (int)RequestorId, IsAdmin);
 			return Ok(user);
 		}
 		catch (Exception ex)
@@ -115,7 +115,7 @@ public class UserController : BaseController
 	{
 		try
 		{
-			await _userService.UpdateAsync(userDto, id, RequestorId, IsAdmin);
+			await _userService.UpdateAsync(userDto, id, (int)RequestorId, IsAdmin);
 			return Ok($"User {userDto.Id} updated");
 		}
 		catch (Exception ex)
@@ -135,7 +135,12 @@ public class UserController : BaseController
 	{
 		try
 		{
-			await _userService.UpdateMailAddressAsync(id, data.EmailAddress, data.Password, IsAdmin, RequestorId);
+			// Update email call
+			await _userService.UpdateMailAddressAsync(
+				new UserDto { Id = id, Password = data.Password },
+				data.EmailAddress, IsAdmin, (int)RequestorId);
+
+			// Return
 			return Ok($"Email address updated succesfully {data.EmailAddress}");
 		}
 		catch (Exception ex)
@@ -155,7 +160,11 @@ public class UserController : BaseController
 	{
 		try
 		{
-			await _userService.UpdatePasswordAsync(data.NewPassword, data.OldPassword, id, IsAdmin, RequestorId);
+			// Call update service
+			await _userService.UpdatePasswordAsync(new UserDto { Id = id, Password = data.OldPassword },
+				data.NewPassword, IsAdmin, (int)RequestorId);
+
+			// Return
 			return Ok("Password updated succesfully");
 		}
 		catch (Exception ex)
@@ -174,7 +183,7 @@ public class UserController : BaseController
 	{
 		try
 		{
-			await _userService.RemoveByIdAsync(id, RequestorId);
+			await _userService.RemoveByIdAsync(id, (int)RequestorId);
 			return Ok($"User with ID {id} removed succesfully");
 		}
 		catch (Exception ex)

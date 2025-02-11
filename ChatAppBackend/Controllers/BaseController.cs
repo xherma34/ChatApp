@@ -8,25 +8,43 @@ namespace ChatAppBackend.Controllers;
 [ApiController]
 public abstract class BaseController : ControllerBase
 {
-	// protected int RequestorId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-	protected int? RequestorId
+
+	/// <summary>
+	/// Use this for endpoints that REQUIRE authentication (throws if not authenticated)
+	/// </summary>
+	protected int RequestorId
 	{
 		get
 		{
-			// Confirm the user is authenticated
 			if (User?.Identity?.IsAuthenticated != true)
 			{
-				return null;
+				throw new UnauthorizedAccessException("User is not authenticated.");
 			}
 
-			// Retrieve and safely parse the user ID claim
 			var claim = User.FindFirst(ClaimTypes.NameIdentifier);
 			if (claim == null || !int.TryParse(claim.Value, out int id))
 			{
-				return null;
+				throw new UnauthorizedAccessException("User ID is invalid.");
 			}
 
 			return id;
+		}
+	}
+
+	/// <summary>
+	/// Use this for endpoints that ALLOW anonymous access (returns null if not authenticated)
+	/// </summary>
+	protected int? RequestorIdOrNull
+	{
+		get
+		{
+			if (User?.Identity?.IsAuthenticated != true)
+			{
+				return null; // Returns null instead of throwing
+			}
+
+			var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+			return claim != null && int.TryParse(claim.Value, out int id) ? id : null;
 		}
 	}
 	protected bool IsAdmin => User.IsInRole("Admin");
