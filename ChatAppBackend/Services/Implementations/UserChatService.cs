@@ -48,7 +48,7 @@ public class UserChatService : IUserChatService
 		{
 			UserId = userId,
 			ChatId = chatId,
-			UserStatus = UserStatus.Regular
+			UserRole = UserChatRole.Regular
 		};
 
 		await _userChatRepository.AddUserToChatAsync(userChat);
@@ -120,7 +120,7 @@ public class UserChatService : IUserChatService
 		{
 			UserId = userChat.UserId,
 			ChatId = userChat.ChatId,
-			UserStatus = userChat.UserStatus
+			UserRole = userChat.UserRole
 		};
 	}
 
@@ -135,7 +135,7 @@ public class UserChatService : IUserChatService
 			throw new ArgumentException($"User {ucReq.UserId} is not in chat {ucReq.ChatId}: cannot remove");
 
 		// IsModerator || IsSameUser
-		if ((int)ucReq.RequestorId != (int)ucReq.UserId && userChat.UserStatus != UserStatus.Moderator)
+		if ((int)ucReq.RequestorId != (int)ucReq.UserId && userChat.UserRole != UserChatRole.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of remove user from chat");
 
 		// call repository
@@ -150,7 +150,7 @@ public class UserChatService : IUserChatService
 			throw new ArgumentException($"User {requestorId} is not a part of chat {ucDto.ChatId}");
 
 		// Is the moderator of chat || admin
-		if (requestorChat.UserStatus != UserStatus.Moderator && !isAdmin)
+		if (requestorChat.UserRole != UserChatRole.Moderator && !isAdmin)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of change user chat status");
 
 		// Get the userChat of userId
@@ -166,7 +166,7 @@ public class UserChatService : IUserChatService
 			{
 				UserId = ucDto.UserId,
 				ChatId = ucDto.ChatId,
-				UserStatus = ucDto.UserStatus
+				UserRole = ucDto.UserRole
 			});
 
 	}

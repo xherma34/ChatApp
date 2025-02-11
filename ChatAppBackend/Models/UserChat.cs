@@ -15,5 +15,5 @@ public class UserChat
 	// Reference to chat
 	public Chat Chat { get; set; } = null!;
 
-	public UserStatus UserStatus { get; set; } = UserStatus.Regular;
+	public UserChatRole UserRole { get; set; } = UserChatRole.Regular;
 }

@@ -36,9 +36,20 @@ public class ChatService : IChatService
 		if (string.IsNullOrWhiteSpace(chatDto.Name))
 			throw new ArgumentException("Name is a required field when creating chat");
 
-		// Add
-		await _chatRepository.AddAsync(new Chat { Name = chatDto.Name });
+		// Create new chat
+		var newChat = new Chat { Name = chatDto.Name };
+		// Add him
+		await _chatRepository.AddAsync(newChat);
 
+		// Set the user-chat relationship -> creator of chat is also a moderator
+		var userChat = new UserChat
+		{
+			UserId = requestorId,
+			ChatId = newChat.Id,
+			UserRole = Enums.UserChatRole.Moderator
+		};
+
+		await _userChatRepository.AddUserToChatAsync(userChat);
 	}
 
 	public async Task<IEnumerable<ChatDto>> GetAllAsync(int requestorId, bool isAdmin)
@@ -87,7 +98,7 @@ public class ChatService : IChatService
 		}
 
 		var uc = await _userChatRepository.GetByIdAsync(requestorId, chatId);
-		if (uc == null || uc.UserStatus != Enums.UserStatus.Moderator)
+		if (uc == null || uc.UserRole != Enums.UserChatRole.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: only moderators and admins can remove chat rooms");
 
 		await _chatRepository.RemoveAsync(chatId);
@@ -107,7 +118,7 @@ public class ChatService : IChatService
 		// Check authority
 		var uc = await _userChatRepository.GetByIdAsync(requestorId, (int)chatDto.Id);
 
-		if (!isAdmin && uc.UserStatus != Enums.UserStatus.Moderator)
+		if (!isAdmin && uc.UserRole != Enums.UserChatRole.Moderator)
 			throw new UnauthorizedAccessException("Permission denied: only moderators or admins can update chat info");
 
 		await _chatRepository.UpdateAsync(new Chat { Name = chatDto.Name });

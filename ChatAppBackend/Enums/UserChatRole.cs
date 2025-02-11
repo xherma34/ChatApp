@@ -1,6 +1,6 @@
 namespace ChatAppBackend.Enums;
 
-public enum UserStatus
+public enum UserChatRole
 {
 	Regular,
 	Admin,
