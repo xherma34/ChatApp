@@ -1,4 +1,5 @@
 using System;
+using ChatAppBackend.Enums;
 
 namespace ChatAppBackend.DTOs;
 
@@ -10,4 +11,5 @@ public class UserDto
 	public DateTime JoinDate { get; set; }
 	public bool IsBanned { get; set; } = false;
 	public string Password { get; set; } = string.Empty;
+	public UserRole Role { get; set; } = UserRole.Regular;
 }

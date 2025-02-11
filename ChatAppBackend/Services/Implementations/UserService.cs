@@ -12,12 +12,15 @@ namespace ChatAppBackend.Services.Implementations;
 public class UserService : IUserService
 {
 	private readonly IUserRepository _userRepository;
-	private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
+	private readonly IPasswordHasher<User> _passwordHasher;
 
 	public UserService(
-		IUserRepository userRep)
+		IUserRepository userRep,
+		IPasswordHasher<User> pswdHasher
+		)
 	{
 		_userRepository = userRep;
+		_passwordHasher = pswdHasher;
 	}
 
 
@@ -26,25 +29,31 @@ public class UserService : IUserService
 		// Check all properties that needs to be filed:
 		// Password present
 		// Pressence of required fields: password, mail, nickname
-		if (userDto.Password == string.Empty || userDto.MailAddress == null || userDto.Nickname == string.Empty)
-			throw new ArgumentException("Required information are missing for user creation");
+		// if (string.IsNullOrEmpty(userDto.Password) ||
+		// 	string.IsNullOrEmpty(userDto.MailAddress) ||
+		// 	string.IsNullOrEmpty(userDto.Nickname))
+		// 	throw new ArgumentException("Required information are missing for user creation");
 
-		// Mail present, not redundant
-		var mailUser = _userRepository.GetByMailAddressAsync(userDto.MailAddress);
-		if (mailUser != null)
-			throw new ArgumentException("Account with this mail address already exists");
+		// // Mail present, not redundant
+		// var mailUser = _userRepository.GetByMailAddressAsync(userDto.MailAddress);
+		// if (mailUser != null)
+		// 	throw new ArgumentException("Account with this mail address already exists");
 
-		// Nickname - CAN BE REDUNDANT with Id combination it makes a unique nickname
+		// // Check email valid format
+		// if (!new EmailAddressAttribute().IsValid(userDto.MailAddress))
+		// 	throw new ArgumentException("Passed email address is not in a correct format");
 
-		if (!new EmailAddressAttribute().IsValid(userDto.MailAddress))
-			throw new ArgumentException("Passed email address is not in a correct format");
+		// TODO: redundant call, find out how to not get the warning.. this is checked in the auth serv
+		if (string.IsNullOrEmpty(userDto.MailAddress))
+			throw new ArgumentException("");
 
 		User user = new User
 		{
 			Nickname = userDto.Nickname,
 			MailAddress = userDto.MailAddress,
 			JoinDate = DateTime.Today,
-			IsBanned = false
+			IsBanned = false,
+			Role = userDto.Role
 		};
 
 		user.PasswordHash = _passwordHasher.HashPassword(user, userDto.Password);
@@ -129,6 +138,7 @@ public class UserService : IUserService
 		await _userRepository.UpdateAsync(user);
 	}
 
+	// TODO: Rewrite, dont put the password logic here, use authentication service and verifyPassword
 	public async Task UpdateMailAddressAsync(int userId, string mail, string password, bool isAdmin, int requestorId)
 	{
 		// Authorization check
@@ -159,6 +169,7 @@ public class UserService : IUserService
 		await _userRepository.UpdateAsync(user);
 	}
 
+	// TODO: Rewrite, dont put the password logic here, use authentication service and verifyPassword
 	public async Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId)
 	{
 		// authorization check
@@ -181,5 +192,11 @@ public class UserService : IUserService
 		// update
 		user.PasswordHash = _passwordHasher.HashPassword(user, password);
 		await _userRepository.UpdateAsync(user);
+	}
+
+	// TODO: Implement
+	public Task UpdateRefreshTokenAsync(string token)
+	{
+		throw new NotImplementedException();
 	}
 }

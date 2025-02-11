@@ -13,11 +13,13 @@ public class User
 	public string MailAddress { get; set; } = string.Empty;
 	public DateTime JoinDate { get; set; }
 	public bool IsBanned { get; set; } = false;
-	// TODO: Add role!
+	public UserRole Role { get; set; } = UserRole.Regular;
+	public string RefreshToken { get; set; } = string.Empty;
 
 	// Relationships
 	// User 1 - N messages
-	public ICollection<Message> Messages { get; set; } = new List<Message>();
+	public ICollection<Message> Messages
+	{ get; set; } = new List<Message>();
 
 	// User 1 - N notifications
 	public ICollection<Notification> Notifications { get; set; } = new List<Notification>();

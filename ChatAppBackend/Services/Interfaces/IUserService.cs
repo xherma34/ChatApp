@@ -39,4 +39,5 @@ public interface IUserService
 
 	Task UpdatePasswordAsync(string password, string oldPassword, int userId, bool isAdmin, int requestorId);
 
+	Task UpdateRefreshTokenAsync(string token);
 }
