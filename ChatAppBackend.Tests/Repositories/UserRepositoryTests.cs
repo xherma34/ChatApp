@@ -6,19 +6,14 @@ using Microsoft.VisualBasic;
 
 namespace ChatAppBackend.Tests.Repositories;
 
-public class UserRepositoryTests
+public class UserRepositoryTests : BaseRepositoryTests
 {
 
-    /// <summary>
-    /// Creates a new set of options to configure an inmemory AppDbContext
-    /// Each test can then use different database name to ensure isolation
-    /// </summary>
-    /// <param name="dbName">Name of the in-memory DB</param>
-    /// <returns>Configured db options</returns>
-    private DbContextOptions<ApplicationDbContext> GetInMemoryOptions(string dbName) =>
-            new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .Options;
+
+    // private DbContextOptions<ApplicationDbContext> GetInMemoryOptions(string dbName) =>
+    //         new DbContextOptionsBuilder<ApplicationDbContext>()
+    //             .UseInMemoryDatabase(databaseName: dbName)
+    //             .Options;
 
     [Fact]
     public async void AddAsync_Should_Add_User_To_DB()
@@ -63,7 +58,9 @@ public class UserRepositoryTests
             var user = await context.Users.FirstOrDefaultAsync(
                 u => u.Nickname == "user1"
             );
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var getUser = await repo.GetByIdAsync(user.Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             Assert.NotNull(getUser);
             Assert.Equal("user1", getUser.Nickname);
         }
@@ -146,7 +143,9 @@ public class UserRepositoryTests
             var updatedUser = await context.Users.FirstOrDefaultAsync(
                 u => u.MailAddress == "user5@email.com"
             );
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             Assert.Equal("notUser5", updatedUser.Nickname);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
     }
 
