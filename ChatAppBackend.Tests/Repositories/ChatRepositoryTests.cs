@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatAppBackend.Tests.Repositories;
 
-public class ChatRepositoryTest : BaseRepositoryTests
+public class ChatRepositoryTests : BaseRepositoryTests
 {
 	[Fact]
 	public async void GetById_Should_Fetch_Chat()
