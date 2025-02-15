@@ -28,7 +28,9 @@ public class NotificationRepositoryTests : BaseRepositoryTests
 			);
 
 			var repo = new NotificationRepository(context);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			var fetchedNotif = await repo.GetByIdAsync(notif.Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 			Assert.NotNull(fetchedNotif);
 			Assert.Equal("notification", fetchedNotif.Content);
