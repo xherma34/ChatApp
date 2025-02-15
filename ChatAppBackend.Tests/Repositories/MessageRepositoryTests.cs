@@ -275,8 +275,5 @@ public class MessageRepositoryTests : BaseRepositoryTests
 			Assert.Equal(user.Nickname, fetchedUser.Nickname);
 		}
 
-
-
-
 	}
 }
