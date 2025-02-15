@@ -38,6 +38,13 @@ public class MessageRepository : IMessageRepository
 #pragma warning restore CS8603 // Possible null reference return.
 	}
 
+	public async Task<IEnumerable<Message>> GetAllByUserIdAsync(int userId)
+	{
+		return await _dbContext.Messages
+			.Where(m => m.UserId == userId)
+			.ToListAsync();
+	}
+
 	// ----------------------- ADD METHODS -----------------------
 	public async Task AddAsync(Message message)
 	{
@@ -63,13 +70,6 @@ public class MessageRepository : IMessageRepository
 			_dbContext.Messages.Remove(msg);
 			await _dbContext.SaveChangesAsync();
 		}
-	}
-
-	public async Task<IEnumerable<Message>> GetAllByUserIdAsync(int userId)
-	{
-		return await _dbContext.Messages
-			.Where(m => m.UserId == userId)
-			.ToListAsync();
 	}
 
 	public async Task<User> GetUserByMsgIdAsync(int msgId)
