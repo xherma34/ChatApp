@@ -62,7 +62,7 @@ public class UserChatRepository : IUserChatRepository
 			.Any(uc => uc.UserId == userId && uc.ChatId == chatId);
 	}
 
-	public async Task UpdateUserChatStatusAsync(UserChat userChat)
+	public async Task UpdateUserChatRoleAsync(UserChat userChat)
 	{
 		_dbContext.UserChats.Update(userChat);
 		await _dbContext.SaveChangesAsync();

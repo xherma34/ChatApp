@@ -23,7 +23,7 @@ public interface IUserChatRepository
 	/// <summary>
 	/// Updates the user with id userChat.UserId status in the chat of userChat.ChatId
 	/// </summary>
-	Task UpdateUserChatStatusAsync(UserChat userChat);
+	Task UpdateUserChatRoleAsync(UserChat userChat);
 
 	/// <summary>
 	/// Returns a record of UserChat join table of passed ids
