@@ -161,7 +161,7 @@ public class UserChatService : IUserChatService
 			throw new ArgumentException($"User {requestorId} is not a part of chat {ucDto.ChatId}");
 
 		// Change status
-		await _userChatRepository.UpdateUserChatStatusAsync(
+		await _userChatRepository.UpdateUserChatRoleAsync(
 			new UserChat
 			{
 				UserId = ucDto.UserId,
