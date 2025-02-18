@@ -12,7 +12,7 @@ public interface IUserRepository
 	/// <param name="id">user's id</param>
 	/// <returns>User info from DB</returns>
 	/// <exception cref="KeyNotFoundException">User with passed ID isn't in the DB</exception>
-	Task<User> GetByIdAsync(int id);
+	Task<User?> GetByIdAsync(int id);
 
 	/// <summary>
 	/// Tries to return user with email address from the DB

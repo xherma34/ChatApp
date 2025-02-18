@@ -136,7 +136,10 @@ public class UserChatRepositoryTests : BaseRepositoryTests
 			var uc = await context.UserChats.FirstOrDefaultAsync(
 				uc => uc.UserId == userId && uc.ChatId == chatId
 			);
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			uc.UserRole = UserChatRole.Moderator;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 			var repo = new UserChatRepository(context);
 			await repo.UpdateUserChatRoleAsync(uc);
 
@@ -211,12 +214,15 @@ public class UserChatRepositoryTests : BaseRepositoryTests
 				u => u.Nickname == "user2"
 			);
 
+
 			// Create new userchat
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			context.UserChats.Add(new UserChat
 			{
 				UserId = user2.Id,
 				ChatId = chatId
 			});
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 			await context.SaveChangesAsync();
 
 		}
@@ -260,11 +266,13 @@ public class UserChatRepositoryTests : BaseRepositoryTests
 			);
 
 			// Create new userchat
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			context.UserChats.Add(new UserChat
 			{
 				UserId = userId,
 				ChatId = chat2.Id
 			});
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 			await context.SaveChangesAsync();
 		}
 
@@ -316,6 +324,7 @@ public class UserChatRepositoryTests : BaseRepositoryTests
 			c => c.Name == chatName
 		);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 		context.UserChats.Add(
 			new UserChat
 			{
@@ -324,6 +333,7 @@ public class UserChatRepositoryTests : BaseRepositoryTests
 				UserRole = role
 			}
 		);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 		await context.SaveChangesAsync();
 

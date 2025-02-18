@@ -16,7 +16,7 @@ public class ChatRepository : IChatRepository
 	}
 
 	// ----------------------- GET METHODS -----------------------
-	public async Task<Chat> GetByIdAsync(int id)
+	public async Task<Chat?> GetByIdAsync(int id)
 	{
 		var chat = await _dbContext.Chats.FindAsync(id);
 		if (chat == null) throw new KeyNotFoundException($"Chat with ID {id} not found.");

@@ -14,7 +14,7 @@ public interface IChatRepository
 	/// <param name="id">chat's id</param>
 	/// <returns>Chat info from DB</returns>
 	/// <exception cref="KeyNotFoundException">Chat with passed ID isn't in the DB</exception>
-	Task<Chat> GetByIdAsync(int id);
+	Task<Chat?> GetByIdAsync(int id);
 
 	/// <summary>
 	/// Method gets all chats from DB

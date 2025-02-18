@@ -26,35 +26,39 @@ public class UserChatService : IUserChatService
 
 	}
 
-	public async Task AddUserToChat(int requestorId, int userId, int chatId)
+	public async Task AddUserToChatAsync(UserChatRequest ucReq)
 	{
 		// TODO: Add functionality that users can be banned from channels -> here you check if they are banned
+
+		if (ucReq.UserId == null || ucReq.ChatId == null || ucReq.RequestorId == null)
+			throw new ArgumentException($"Missing required data to fetch add a user");
+
 		// IsSameId
-		if (requestorId != userId)
+		if (ucReq.RequestorId.Value != ucReq.UserId.Value)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of add user to chat");
 
 		// User not null
-		var user = await _userRepository.GetByIdAsync(userId);
+		var user = await _userRepository.GetByIdAsync(ucReq.UserId.Value);
 		if (user == null)
-			throw new UnauthorizedAccessException($"User with id {userId} doesn't exist");
+			throw new KeyNotFoundException($"User with id {ucReq.UserId.Value} doesn't exist");
 
 		// Chat not null
-		var chat = await _chatRepository.GetByIdAsync(chatId);
+		var chat = await _chatRepository.GetByIdAsync(ucReq.ChatId.Value);
 		if (chat == null)
-			throw new UnauthorizedAccessException($"User with id {chatId} doesn't exist");
+			throw new KeyNotFoundException($"Chat with id {ucReq.ChatId.Value} doesn't exist");
 
 		// Create
 		var userChat = new UserChat
 		{
-			UserId = userId,
-			ChatId = chatId,
+			UserId = ucReq.UserId.Value,
+			ChatId = ucReq.ChatId.Value,
 			UserRole = UserChatRole.Regular
 		};
 
 		await _userChatRepository.AddUserToChatAsync(userChat);
 	}
 
-	public async Task<IEnumerable<ChatDto>> GetAllChatsOfUser(UserChatRequest ucReq)
+	public async Task<IEnumerable<ChatDto>> GetAllChatsOfUserAsync(UserChatRequest ucReq)
 	{
 		if (ucReq.UserId == null || ucReq.IsAdmin == null || ucReq.RequestorId == null)
 			throw new ArgumentException($"Missing required data to fetch chats of user");
@@ -82,14 +86,14 @@ public class UserChatService : IUserChatService
 		});
 	}
 
-	public async Task<IEnumerable<UserDto>> GetAllUsersInChat(UserChatRequest data)
+	public async Task<IEnumerable<UserDto>> GetAllUsersInChatAsync(UserChatRequest data)
 	{
 		// Check data
 		if (data.ChatId == null || data.RequestorId == null || data.IsAdmin == null)
 			throw new ArgumentException($"Missing required data to fetch users of chat");
 
 		// Get any occurence of: UserChat (chatId, requestorID)
-		var isInChat = _userChatRepository.IsUserInChat((int)data.RequestorId, (int)data.ChatId);
+		var isInChat = _userChatRepository.IsUserInChat(data.RequestorId.Value, data.ChatId.Value);
 		// authority: IsPartOfChat || IsAdmin
 		if (!isInChat && !(bool)data.IsAdmin)
 			throw new UnauthorizedAccessException($"Permission denied: unauthorized call of get all users in chat");
@@ -97,7 +101,9 @@ public class UserChatService : IUserChatService
 		// Get all users chats
 		var users = await _userChatRepository.GetAllUsersInChatAsync((int)data.ChatId);
 		// check not null
-		if (users == null)
+		// if (users == null)
+		// throw new ArgumentException($"No records of users in chat ${(int)data.ChatId}");
+		if (users.Count() == 0)
 			throw new ArgumentException($"No records of users in chat ${(int)data.ChatId}");
 
 		// return dto
@@ -124,7 +130,7 @@ public class UserChatService : IUserChatService
 		};
 	}
 
-	public async Task RemoveUserFromChat(UserChatRequest ucReq)
+	public async Task RemoveUserFromChatAsync(UserChatRequest ucReq)
 	{
 		if (ucReq.UserId == null || ucReq.ChatId == null || ucReq.RequestorId == null)
 			throw new ArgumentException($"Missing required data to remove user from chat");
@@ -132,7 +138,7 @@ public class UserChatService : IUserChatService
 		// Record of UserChat exists
 		var userChat = await _userChatRepository.GetByIdAsync((int)ucReq.UserId, (int)ucReq.ChatId);
 		if (userChat == null)
-			throw new ArgumentException($"User {ucReq.UserId} is not in chat {ucReq.ChatId}: cannot remove");
+			throw new KeyNotFoundException($"User {ucReq.UserId} is not in chat {ucReq.ChatId}: cannot remove");
 
 		// IsModerator || IsSameUser
 		if ((int)ucReq.RequestorId != (int)ucReq.UserId && userChat.UserRole != UserChatRole.Moderator)
@@ -142,31 +148,35 @@ public class UserChatService : IUserChatService
 		await _userChatRepository.RemoveUserFromChatAsync((int)ucReq.UserId, (int)ucReq.ChatId);
 	}
 
-	public async Task UpdateUserChatStatus(int requestorId, bool isAdmin, UserChatDto ucDto)
+	public async Task UpdateUserChatStatus(UserChatRequest req, UserChatRole role)
 	{
+
+		if (req.ChatId == null || req.RequestorId == null || req.UserId == null || req.IsAdmin == null)
+			throw new ArgumentException("Error: missing a required property to update user's status in chat");
+
 		// IsModerator of chat -> THE REQUESTOR
-		var requestorChat = await _userChatRepository.GetByIdAsync(requestorId, ucDto.ChatId);
+		var requestorChat = await _userChatRepository.GetByIdAsync(req.RequestorId.Value, req.ChatId.Value);
 		if (requestorChat == null)
-			throw new ArgumentException($"User {requestorId} is not a part of chat {ucDto.ChatId}");
+			throw new KeyNotFoundException($"User {req.RequestorId} is not a part of chat {req.ChatId}");
 
 		// Is the moderator of chat || admin
-		if (requestorChat.UserRole != UserChatRole.Moderator && !isAdmin)
+		if (requestorChat.UserRole != UserChatRole.Moderator && !req.IsAdmin.Value)
 			throw new UnauthorizedAccessException("Permission denied: unauthorized call of change user chat status");
 
 		// Get the userChat of userId
-		var userChat = await _userChatRepository.GetByIdAsync(ucDto.UserId, ucDto.ChatId);
+		var userChat = await _userChatRepository.GetByIdAsync(req.UserId.Value, req.ChatId.Value);
 
 		// Check its not null
 		if (userChat == null)
-			throw new ArgumentException($"User {requestorId} is not a part of chat {ucDto.ChatId}");
+			throw new KeyNotFoundException($"User {req.UserId} is not a part of chat {req.ChatId}");
 
 		// Change status
 		await _userChatRepository.UpdateUserChatRoleAsync(
 			new UserChat
 			{
-				UserId = ucDto.UserId,
-				ChatId = ucDto.ChatId,
-				UserRole = ucDto.UserRole
+				UserId = req.UserId.Value,
+				ChatId = req.ChatId.Value,
+				UserRole = role
 			});
 
 	}

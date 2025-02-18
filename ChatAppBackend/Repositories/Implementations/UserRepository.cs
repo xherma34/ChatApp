@@ -19,12 +19,9 @@ public class UserRepository : IUserRepository
 	}
 
 	// ----------------------- GET METHODS -----------------------
-	public async Task<User> GetByIdAsync(int id)
+	public async Task<User?> GetByIdAsync(int id)
 	{
-#pragma warning disable CS8603 // Possible null reference return.
 		return await _dbContext.Users.FindAsync(id);
-#pragma warning restore CS8603 // Possible null reference return.
-
 	}
 
 	public async Task<IEnumerable<User>> GetAllAsync()

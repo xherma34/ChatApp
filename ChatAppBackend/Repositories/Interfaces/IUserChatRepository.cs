@@ -28,7 +28,7 @@ public interface IUserChatRepository
 	/// <summary>
 	/// Returns a record of UserChat join table of passed ids
 	/// </summary>
-	Task<UserChat> GetByIdAsync(int userId, int chatId);
+	Task<UserChat?> GetByIdAsync(int userId, int chatId);
 
 	/// <summary>
 	/// Returns a list of all users that are a part of chat with ID chatId

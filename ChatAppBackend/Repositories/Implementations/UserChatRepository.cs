@@ -32,12 +32,10 @@ public class UserChatRepository : IUserChatRepository
 		await _dbContext.SaveChangesAsync();
 	}
 
-	public async Task<UserChat> GetByIdAsync(int userId, int chatId)
+	public async Task<UserChat?> GetByIdAsync(int userId, int chatId)
 	{
-#pragma warning disable CS8603 // Possible null reference return.
 		return await _dbContext.UserChats
 			.FirstOrDefaultAsync(uc => uc.ChatId == chatId && uc.UserId == userId);
-#pragma warning restore CS8603 // Possible null reference return.
 	}
 
 	public async Task<IEnumerable<Chat>> GetAllChatsOfUserAsync(int userId)
