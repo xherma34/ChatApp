@@ -75,7 +75,7 @@ public class UserController : BaseController
 
 		try
 		{
-			var chats = await _userChatService.GetAllChatsOfUser(ucReq);
+			var chats = await _userChatService.GetAllChatsOfUserAsync(ucReq);
 			return Ok(chats);
 		}
 		catch (Exception ex)

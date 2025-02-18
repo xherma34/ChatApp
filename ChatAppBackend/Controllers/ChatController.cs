@@ -64,7 +64,7 @@ public class ChatController : BaseController
 
 		try
 		{
-			var users = await _userChatService.GetAllUsersInChat(chatReq);
+			var users = await _userChatService.GetAllUsersInChatAsync(chatReq);
 			return Ok($"All users of chat{chatId} fetched succesfully");
 		}
 		catch (Exception ex)
